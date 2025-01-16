@@ -1,10 +1,11 @@
 from transformers import VisionEncoderDecoderModel, ViTImageProcessor, AutoTokenizer
 import torch
 from PIL import Image
-from fastapi import FastAPI, File, UploadFile
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi import FastAPI, File, UploadFile, Request
+from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 import io
+
 
 model = VisionEncoderDecoderModel.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
 feature_extractor = ViTImageProcessor.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
@@ -38,20 +39,25 @@ def predict_step(image_paths):
 
 
 app = FastAPI(title="image-captioning", description="image-captioning")
+templates = Jinja2Templates(directory="templates")
 
 class ImageCaption(BaseModel):
   caption: str
 
 
+
 @app.post("/predict", response_model=ImageCaption)
-async def predict(image: UploadFile = File(...)):
+async def predict(request: Request, image: UploadFile = File(...)):
+
   contents = image.file.read()
   result = predict_step([Image.open(io.BytesIO(contents))])
-  return JSONResponse(content={"caption": result})
+  return templates.TemplateResponse("index.html", {"request": request, "caption": result[0]})
 
-@app.get("/", include_in_schema=False)
-async def index():
-  return RedirectResponse(url="/docs")
+
+
+@app.get("/")
+async def index(request: Request):
+  return templates.TemplateResponse("index.html", {"request": request})
 
 
 

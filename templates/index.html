@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Caption</title>
+</head>
+<body>
+    <div>
+        <h3>upload an image</h3>
+        <form action="/predict" method="post" enctype="multipart/form-data">
+            <input type="file" name="image">
+            <input type="submit">
+        </form>
+        <p>{{caption}}</p>
+    </div>
+</body>
+</html>
