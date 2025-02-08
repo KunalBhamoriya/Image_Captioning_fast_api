@@ -5,6 +5,7 @@ from fastapi import FastAPI, File, UploadFile, Request
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 import io
+import os
 
 
 model = VisionEncoderDecoderModel.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
@@ -49,6 +50,11 @@ class ImageCaption(BaseModel):
 @app.post("/predict", response_model=ImageCaption)
 async def predict(request: Request, image: UploadFile = File(...)):
 
+  # print(image.filename)
+  # filename = image.filename
+  # filepath = os.path.join("images/", filename)                  
+  # image.save(filepath)
+  
   contents = image.file.read()
   result = predict_step([Image.open(io.BytesIO(contents))])
   return templates.TemplateResponse("index.html", {"request": request, "caption": result[0]})
